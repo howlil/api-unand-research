@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String                 @id @default(uuid())
+  email                String                 @unique
+  passwrod             String
+  nama                 String
+  photo_url            String?
+  role                 Role[]
+  token                Token[]
+  project_collaborator Project_Collaborator[]
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @updatedAt
+}
+
+model Project_Collaborator {
+  user_id    String
+  project_id String
+  is_owner   Boolean
+  status     Status
+  User       User?    @relation(fields: [user_id], references: [id])
+  Project    Project? @relation(fields: [project_id], references: [id])
+
+  @@id([user_id, project_id])
+}
+
+model Project {
+  id                   String                 @id @default(uuid())
+  nama_project         String
+  deskripsi            String                 @db.Text
+  object               String
+  status               Status
+  task                 Task[]
+  proposal             Proposal?              @relation()
+  project_collaborator Project_Collaborator[]
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @updatedAt
+  proposalId           String
+}
+
+model Task {
+  id               String   @id @default(uuid())
+  deskripsi        String   @db.Text
+  deadline         String
+  is_finish        Boolean
+  penanggung_jawab String
+  project_id       String
+  Project          Project? @relation(fields: [project_id], references: [id])
+}
+
+model Proposal {
+  id         String  @id @default(uuid())
+  judul      String
+  deskripsi  String  @db.Text
+  file_url   String
+  status     Status
+  project_id String  @unique
+  project    Project @relation(fields: [project_id], references: [id])
+}
+
+model Role {
+  id         String   @id @default(uuid())
+  nama_role  String
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Token {
+  id         String   @id @default(uuid())
+  token      String   @db.Text
+  user_id    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+enum Status {
+  PENDING
+  SELESAI
+  DITOLAK
+}
