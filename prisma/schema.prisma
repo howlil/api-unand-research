@@ -13,7 +13,7 @@ model User {
   passwrod             String
   nama                 String
   photo_url            String?
-  role                 ROLE
+  role                 ROLE                   @default(USER)
   token                Token[]
   project_collaborator Project_Collaborator[]
   created_at           DateTime               @default(now())
@@ -37,13 +37,13 @@ model Project_Collaborator {
 }
 
 model Project {
-  id                   String                 @id @default(uuid())
-  nama_project         String
-  deskripsi            String                 @db.Text
-  object               String
-  status               Status
-  task                 Task[]
-  is_finish            Boolean
+  id           String  @id @default(uuid())
+  nama_project String
+  deskripsi    String  @db.Text
+  object       String
+  task         Task[]
+  is_finish    Boolean
+  invite_code  String  @unique
   proposal             Proposal?              @relation()
   project_collaborator Project_Collaborator[]
   created_at           DateTime               @default(now())
