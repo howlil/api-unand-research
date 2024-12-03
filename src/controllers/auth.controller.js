@@ -1,15 +1,31 @@
 const prisma = require('../configs/db');
-const validate = require('../middlewares/validate.middleware');
-const validation = require('../validations/auth.validation');
 const { generateToken } = require('../utils/jwt.js');
 const { checkPassword, encryptPassword } = require('../utils/bcrypt.js');
+const Joi = require('joi');
+
+// Validation schemas
+const registerSchema = Joi.object({
+    email: Joi.string().email().required(),
+    nama: Joi.string().min(3).required(),
+    password: Joi.string().min(6).required(),
+});
+
+const loginSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+});
+
+const editUserSchema = Joi.object({
+    email: Joi.string().email().optional(),
+    nama: Joi.string().min(3).optional(),
+    password: Joi.string().min(6).optional(),
+    photo_url: Joi.string().uri().optional(),
+}).min(1);
 
 async function register_user(req, res) {
     try {
-        console.log('Validating register user input...');
-        const validatedData = validate(validation.register_user, req.body);
+        const validatedData = await registerSchema.validateAsync(req.body);
 
-        console.log('Checking if email exists...');
         const userExists = await prisma.user.findUnique({
             where: { email: validatedData.email },
         });
@@ -18,10 +34,8 @@ async function register_user(req, res) {
             return res.status(400).json({ message: 'Email already exists', data: null });
         }
 
-        console.log('Encrypting password...');
         const hashedPassword = await encryptPassword(validatedData.password);
 
-        console.log('Creating new user...');
         const newUser = await prisma.user.create({
             data: {
                 email: validatedData.email,
@@ -30,50 +44,114 @@ async function register_user(req, res) {
             },
         });
 
-        console.log('User registered successfully');
         return res.status(201).json({
             message: 'User registered successfully',
             data: { id: newUser.id, email: newUser.email, nama: newUser.nama },
         });
     } catch (error) {
-        console.error('Error registering user:', error.message);
+        if (error.isJoi) {
+            return res.status(400).json({ message: error.details[0].message, data: null });
+        }
         return res.status(500).json({ message: 'Internal server error', data: null });
     }
 }
 
 async function login_user(req, res) {
     try {
-        console.log('Validating login user input...');
-        const validatedData = validate(validation.login_user, req.body);
+        const validatedData = await loginSchema.validateAsync(req.body);
 
-        console.log('Fetching user by email...');
         const user = await prisma.user.findUnique({
             where: { email: validatedData.email },
         });
 
-        if (!user) {
+        if (!user || !(await checkPassword(validatedData.password, user.password))) {
             return res.status(404).json({ message: 'Invalid email or password', data: null });
         }
 
-        console.log('Validating password...');
-        const isPasswordValid = await checkPassword(validatedData.password, user.password);
-
-        if (!isPasswordValid) {
-            return res.status(404).json({ message: 'Invalid email or password', data: null });
-        }
-
-        console.log('Generating JWT token...');
         const token = generateToken(user.id);
 
-        console.log('User logged in successfully');
         return res.status(200).json({
             message: 'User logged in successfully',
             data: { token, user: { id: user.id, email: user.email, nama: user.nama } },
         });
     } catch (error) {
-        console.error('Error logging in user:', error.message);
+        if (error.isJoi) {
+            return res.status(400).json({ message: error.details[0].message, data: null });
+        }
         return res.status(500).json({ message: 'Internal server error', data: null });
     }
 }
 
-module.exports = { register_user, login_user };
+async function get_users(req, res) {
+    try {
+        const user_id = req.user.id
+        const users = await prisma.user.findUnique({
+            where: {
+                id: user_id
+            },
+            select: {
+                id: true,
+                email: true,
+                nama: true,
+                photo_url: true,
+                created_at: true,
+            },
+        });
+        if (!users || users.length === 0) {
+            return res.status(404).json({ message: 'No users found', data: null });
+        }
+
+        return res.status(200).json({
+            message: 'Users fetched successfully',
+            data: users,
+        });
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal server error', data: null });
+    }
+}
+
+async function edit_user(req, res) {
+    try {
+        if (req.file) {
+            const img_url = `https://${req.get('host')}/images/${req.file.filename}`;
+            req.body.photo_url = img_url;
+        }
+
+        const validatedData = await editUserSchema.validateAsync(req.body);
+
+        const userId = req.user.id; // Ensure `req.user` is populated by middleware
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found', data: null });
+        }
+    
+        if (validatedData.password) {
+            validatedData.password = await encryptPassword(validatedData.password);
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: validatedData,
+        });
+
+        return res.status(200).json({
+            message: 'User updated successfully',
+            data: {
+                id: updatedUser.id,
+                email: updatedUser.email,
+                nama: updatedUser.nama,
+                photo_url: updatedUser.photo_url,
+            },
+        });
+    } catch (error) {
+        if (error.isJoi) {
+            return res.status(400).json({ message: error.details[0].message, data: null });
+        }
+        return res.status(500).json({ message: 'Internal server error', data: null });
+    }
+}
+
+module.exports = { register_user, login_user, get_users, edit_user };

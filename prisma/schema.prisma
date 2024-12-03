@@ -13,11 +13,16 @@ model User {
   passwrod             String
   nama                 String
   photo_url            String?
-  role                 Role[]
+  role                 ROLE
   token                Token[]
   project_collaborator Project_Collaborator[]
   created_at           DateTime               @default(now())
   updated_at           DateTime               @updatedAt
+}
+
+enum ROLE {
+  USER
+  ADMIN
 }
 
 model Project_Collaborator {
@@ -38,6 +43,7 @@ model Project {
   object               String
   status               Status
   task                 Task[]
+  is_finish            Boolean
   proposal             Proposal?              @relation()
   project_collaborator Project_Collaborator[]
   created_at           DateTime               @default(now())
@@ -63,15 +69,6 @@ model Proposal {
   status     Status
   project_id String  @unique
   project    Project @relation(fields: [project_id], references: [id])
-}
-
-model Role {
-  id         String   @id @default(uuid())
-  nama_role  String
-  user_id    String
-  user       User     @relation(fields: [user_id], references: [id])
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
 }
 
 model Token {
