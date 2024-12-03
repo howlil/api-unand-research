@@ -14,6 +14,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+app.use('/files', express.static(path.join(__dirname, 'public/files')));
 
 app.use(public_route)
 app.use(api_route)
