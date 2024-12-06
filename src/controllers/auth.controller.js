@@ -59,26 +59,35 @@ async function register_user(req, res) {
 async function login_user(req, res) {
     try {
         const validatedData = await loginSchema.validateAsync(req.body);
+        console.log('Validated Data:', validatedData);
 
         const user = await prisma.user.findUnique({
             where: { email: validatedData.email },
         });
+        console.log('Fetched User:', user);
 
+        console.log(validatedData.password, user.password)
         if (!user || !(await checkPassword(validatedData.password, user.password))) {
             return res.status(404).json({ message: 'Invalid email or password', data: null });
         }
 
         const token = generateToken(user.id);
+        console.log('Generated Token:', token);
 
         return res.status(200).json({
             message: 'User logged in successfully',
             data: { token, user: { id: user.id, email: user.email, nama: user.nama } },
         });
     } catch (error) {
+        console.error('Error during login:', error);
+
         if (error.isJoi) {
             return res.status(400).json({ message: error.details[0].message, data: null });
         }
-        return res.status(500).json({ message: 'Internal server error', data: null });
+        if (error.message.includes("SECRET_KEY")) {
+            return res.status(500).json({ message: "Internal server error: Missing SECRET_KEY", data: null });
+        }
+        return res.status(500).json({ message: error.message, data: null });
     }
 }
 

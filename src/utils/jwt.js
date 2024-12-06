@@ -1,6 +1,10 @@
 const jwt = require("jsonwebtoken");
+require('dotenv').config();
 
 function generateToken(idUser) {
+  if (!process.env.SECRET_KEY) {
+    throw new Error("SECRET_KEY is not defined in environment variables");
+}
   return jwt.sign(
     {
       uuid: idUser,
