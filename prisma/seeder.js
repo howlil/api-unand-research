@@ -6,7 +6,7 @@ async function seedAdminUser() {
     try {
         console.log("Seeding admin user...");
 
-        const adminEmail = "admin@example.com";
+        const adminEmail = "aurel@gmail.com";
         const adminPassword = "@Test123"; 
         const hashedPassword = await encryptPassword(adminPassword);
 
@@ -21,9 +21,9 @@ async function seedAdminUser() {
             const adminUser = await prisma.user.create({
                 data: {
                     email: adminEmail,
-                    nama: "Admin User",
-                    passwrod: hashedPassword,
-                    role: "ADMIN", 
+                    nama: "Aurel",
+                    password: hashedPassword,
+                    role: "USER", 
                 },
             });
 
