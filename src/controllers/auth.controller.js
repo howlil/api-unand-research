@@ -74,6 +74,14 @@ async function login_user(req, res) {
         const token = generateToken(user.id);
         console.log('Generated Token:', token);
 
+        await prisma.token.create({
+            data:{
+                token,
+                user_id: user.id
+            }
+        })
+
+
         return res.status(200).json({
             message: 'User logged in successfully',
             data: { token, user: { id: user.id, email: user.email, nama: user.nama } },
