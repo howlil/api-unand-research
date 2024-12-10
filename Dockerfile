@@ -6,9 +6,7 @@ WORKDIR /usr/src/app
 
 # Salin file package.json dan package-lock.json
 COPY package*.json ./
-
 # Instal dependensi sistem yang diperlukan (libssl, libc)
-RUN apk add --no-cache openssl1.1-compat libstdc++ bash
 
 # Instal dependensi Node.js
 RUN npm install
