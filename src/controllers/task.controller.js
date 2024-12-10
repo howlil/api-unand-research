@@ -35,7 +35,10 @@ async function createTask(req, res) {
         }
 
         const newTask = await prisma.task.create({
-            data: validatedData,
+            data: {
+                ...validatedData,
+                is_finish:false
+            },
         });
 
         return res.status(201).json({
@@ -176,7 +179,8 @@ async function getTaskDetails(req, res) {
             return res.status(404).json({ message: 'Task not found', data: null });
         }
 
-        const isAuthorized = task.Project.project_collaborator.some(
+ 
+        const isAuthorized = task.Project.project_collaborator.filter(
             (collaborator) => collaborator.user_id === userId
         );
 

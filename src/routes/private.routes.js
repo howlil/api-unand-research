@@ -34,7 +34,7 @@ api.get("/api/tasks/:id", task_controller.getTaskDetails)
 api.post("/api/:project_id/proposal", uploadPDF,proposal_controller.createProposal)
 api.patch("/api/:project_id/proposal/apporove", proposal_controller.approveProposal)
 api.get("/api/:project_id/proposal",proposal_controller.getProposalByUser)
-api.get("/api/v1/proposals",proposal_controller.getProposalCounts)
+api.get("/api/proposals",proposal_controller.getProposalCounts)
 
 
 module.exports = api
