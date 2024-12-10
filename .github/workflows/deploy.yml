@@ -41,4 +41,6 @@ jobs:
             --region=${{ secrets.GCLOUD_REGION }} \
             --platform=managed \
             --allow-unauthenticated \
-            --set-env-vars SECRET_KEY=${{ secrets.SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }}
+            --set-env-vars SECRET_KEY=${{ secrets.SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --cpu=2 \
+            --memory=1Gi
