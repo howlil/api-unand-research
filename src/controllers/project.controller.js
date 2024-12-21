@@ -254,8 +254,10 @@ async function deleteProject(req, res) {
         if (!ownership) {
             return res.status(403).json({ message: 'Access denied. Only the owner can delete the project.', data: null });
         }
-
-        // Delete the project
+        await prisma.project_Collaborator.deleteMany({
+            where: { project_id: projectId },
+        });
+        
         await prisma.project.delete({
             where: { id: projectId },
         });

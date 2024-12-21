@@ -57,6 +57,8 @@ async function register_user(req, res) {
 }
 
 async function login_user(req, res) {
+
+
     try {
         const validatedData = await loginSchema.validateAsync(req.body);
         console.log('Validated Data:', validatedData);
