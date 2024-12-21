@@ -27,8 +27,8 @@ api.post("/api/project/collaborators",project_controller.addCollaborators)
 api.post("/api/task",task_controller.createTask)
 api.patch("/api/task/:id",task_controller.updateTask)
 api.delete("/api/task/:id", task_controller.deleteTask)
-api.get("/api/tasks/:project_id", task_controller.getAllTasks)
-api.get("/api/tasks/:id", task_controller.getTaskDetails)
+api.get("/api/tasks/:project_id", task_controller.getTasks)
+api.get("/api/task/:id", task_controller.getTaskDetails)
 
 // proposal
 api.post("/api/:project_id/proposal", uploadPDF,proposal_controller.createProposal)

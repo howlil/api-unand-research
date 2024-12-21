@@ -132,7 +132,7 @@ async function deleteTask(req, res) {
 }
 
 
-async function getAllTasks(req, res) {
+async function getTasks(req, res) {
     try {
         const userId = req.user.id;
         const projectId = req.params.project_id;
@@ -180,10 +180,10 @@ async function getTaskDetails(req, res) {
         }
 
  
-        const isAuthorized = task.Project.project_collaborator.filter(
-            (collaborator) => collaborator.user_id === userId
+        const isAuthorized = task.Project.project_collaborator.some(
+            (collaborator) => collaborator.user_id === userId || collaborator.is_owner
         );
-
+        
         if (!isAuthorized) {
             return res.status(403).json({ message: 'Access denied. You are not part of this project.', data: null });
         }
@@ -199,4 +199,4 @@ async function getTaskDetails(req, res) {
 }
 
 
-module.exports = {createTask,updateTask,deleteTask,getAllTasks,getTaskDetails}
+module.exports = {createTask,updateTask,deleteTask,getTasks,getTaskDetails}
